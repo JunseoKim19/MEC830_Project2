@@ -95,7 +95,7 @@ void loop()                                                             // Main 
         runTime = runTimeB;
         DriveBackward();
         break;
-      case 16761405:                           // skip forward - face right
+      case 16720605:                            // skip backward - face left
         Serial.println("Rotating CCW by 90 degrees");
         initialSpeed = initialSpeedRotation;
         orientation -= 90;
@@ -106,7 +106,7 @@ void loop()                                                             // Main 
         targetAngle = orientation;
         RotateCCW();
         break;
-      case 23205:                           // button 6 - face right
+      case 16761405:                           // skip forward - face right
         Serial.println("Rotating CW by 90 degrees");
         initialSpeed = initialSpeedRotation;
         orientation += 90;
