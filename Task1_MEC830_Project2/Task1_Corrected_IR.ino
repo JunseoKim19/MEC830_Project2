@@ -4,8 +4,8 @@
 #include <IRremote.h>
 #include <PID_v2.h>
 
-
 MPU6050 mpu;
+
 bool dmpReady = false;  
 uint8_t mpuIntStatus;   
 uint8_t devStatus;      
@@ -33,8 +33,8 @@ int maxSpeed2 = 85;
 int minSpeed2 = 0;
 
 float kp = 12, kp2 = 0.1;                    //15
-int pControlSpeedR, pControlSpeedL, pControlSpeed;
-int initialSpeed, initialSpeedRotation = 74; 
+int pControlSpeedR, pControlSpeedL, pControlSpeed = 120;
+int initialSpeed, initialSpeedRotation = 60; 
 float runTime, runTimeF = 1550, runTimeB = 400;
 float currentAngle;
 float targetAngle;
@@ -82,21 +82,35 @@ void loop()                                                             // Main 
     {
 
       case 16736925:                            // volume up - go straight
-        Serial.println("Going forward for 1.55s");
+        /*Serial.println("Going forward for 1.55s");
         initialSpeed = 120;
         targetAngle = orientation;
         runTime = runTimeF;
-        DriveForward();
+        DriveForward(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        forward();
+        delay(300);
+        TurnOff();
         break;
       case 16754775:                           // volume down - go backward
-        Serial.println("Going backward for 1.55s");
+        /*Serial.println("Going backward for 1.55s");
         initialSpeed = 120;
         targetAngle = orientation;
         runTime = runTimeB;
-        DriveBackward();
+        DriveBackward(); */
+        
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        backward();
+        delay(300);
+        TurnOff();
         break;
       case 16720605:                            // skip backward - face left
-        Serial.println("Rotating CCW by 90 degrees");
+        /*Serial.println("Rotating CCW by 45 degrees");
         initialSpeed = initialSpeedRotation;
         orientation -= 90;
         if (orientation < 0)
@@ -104,17 +118,31 @@ void loop()                                                             // Main 
           orientation += 360;
         }
         targetAngle = orientation;
-        RotateCCW();
+        RotateCCW(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        left();
+        delay(300);
+        TurnOff();
         break;
       case 16761405:                           // skip forward - face right
-        Serial.println("Rotating CW by 90 degrees");
+        /*Serial.println("Rotating CW by 90 degrees");
         initialSpeed = initialSpeedRotation;
         orientation += 90;
         targetAngle = orientation;
-        RotateCW();
+        RotateCW();*/
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        right();
+        delay(300);
+        TurnOff();
         break;
-      case 16769055:                           // channel down - turn left (5 degrees)
-        Serial.println("Rotating CCW by 5 degrees");
+      case 16716015:                           // button 4 - turn left (5 degrees)
+        /*Serial.println("Rotating CCW by 5 degrees");
         initialSpeed = initialSpeedRotation;
         orientation =- 5;
         if (orientation < 0)
@@ -122,42 +150,56 @@ void loop()                                                             // Main 
           orientation += 360;
         }
         targetAngle = orientation;
-        RotateCCW();
+        RotateCCW(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        left();
+        delay(100);
+        TurnOff();
         break;
-      case 16756815:                           // channel up - turn right (5 degrees)
-        Serial.println("Rotating CW by 90 degrees");
+      case 16734885:                           // button 6 - turn right (5 degrees)
+        /*Serial.println("Rotating CW by 90 degrees");
         initialSpeed = initialSpeedRotation;
         orientation += 5;
         targetAngle = orientation;
-        RotateCW();
+        RotateCW(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        right();
+        delay(100);
+        TurnOff();
         break;
-        case -26521:                          // face North
-        Serial.println("Facing +Y");
-        initialSpeed = initialSpeedRotation;
-        orientation = 0;
-        targetAngle = orientation;
-        RotateCCW();
-        break;
-      case 17085:                           // button 7 - face West
-        Serial.println("Facing -X");
-        initialSpeed = initialSpeedRotation;
-        orientation = 270;
-        targetAngle = orientation;
-        RotateCCW();
-        break;
-      case 21165:                           // button 9 - face East
-        Serial.println("Facing +X");
-        initialSpeed = initialSpeedRotation;
-        orientation = 90;
-        targetAngle = orientation;
-        RotateCW();
-        break;
-      case 16726215:                           // button 5 - forward adjustment
-        Serial.println("Going forward for 0.4s");
+      case 16718055:                           // button 2 - forward adjustment
+        /*Serial.println("Going forward for 0.4s");
         initialSpeed = 120;
         targetAngle = orientation;
         runTime = runTimeB;
-        DriveForward();
+        DriveForward(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        forward();
+        delay(100);
+        TurnOff();
+        break;
+      case 16730805:                           // button 8 - backward adjustment
+        /*Serial.println("Going backward for 0.4s");
+        initialSpeed = 120;
+        targetAngle = orientation;
+        runTime = runTimeB;
+        DriveBackward(); */
+
+        pControlSpeed = 120;
+        analogWrite(enA, pControlSpeed);
+        analogWrite(enB, pControlSpeed);
+        backward();
+        delay(100);
+        TurnOff();
         break;
     }
     irReceiver.resume();
@@ -169,11 +211,14 @@ float measure_angle() {
     fifoCount = mpu.getFIFOCount();
     if (fifoCount >= packetSize) {
         mpu.getFIFOBytes(fifoBuffer, packetSize);
-        fifoCount -= packetSize;
+        while(fifoCount>= packetSize) {
         mpu.dmpGetQuaternion(&q, fifoBuffer);
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        return ypr[0] * 180/M_PI;
+        fifoCount -= packetSize;
+        }
+
+        return ypr[2] * 180/M_PI;
     }
     return 0;
 }
@@ -204,18 +249,18 @@ void backward ()                                                        // Backw
 
 void left ()                                                            // Turn Left
 {
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, HIGH);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
 }
 
 void right ()                                                           // Turn Right
 {
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW); 
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH); 
 }
 
 void SpeedControlF ()                                                   // Speed Control Forward
@@ -370,8 +415,8 @@ void RotateCW ()                                                        // Rotat
   Serial.println(currentAngle);
   while (1)
   {
-    Serial.print("error: ");
-    Serial.println((currentAngle - targetAngle));
+    //Serial.print("error: ");
+    //Serial.println((currentAngle - targetAngle));
     SpeedControlRotation();
     if (CW)
     {
@@ -386,13 +431,15 @@ void RotateCW ()                                                        // Rotat
       TurnOff();
       break;
     }
+    Serial.print("Target Angle: ");
     Serial.print(targetAngle);
-    Serial.print("  ");
-    Serial.println(currentAngle);
+    Serial.print("  CurrentAngle: ");
+    Serial.print(currentAngle);
     analogWrite(enA, pControlSpeed);
     analogWrite(enB, pControlSpeed);
-    //Serial.print("control speed: "); 
-    //Serial.println(pControlSpeed);
+    Serial.print("  Control speed: "); 
+    Serial.println(pControlSpeed);
+
   }
 }
 
@@ -433,4 +480,3 @@ void RotateCCW ()                                                       // Rotat
     //Serial.println(pControlSpeed);
     }
 }
-
